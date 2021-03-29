@@ -35,7 +35,7 @@ fn efi_main(_handle: Handle, st: SystemTable<Boot>) -> Status {
         let mut buf = [0u8; BUF_SIZE];
         let info: &mut FileInfo = f.get_info(&mut buf).unwrap_success();
         let kernel_file_size: u64 = info.file_size();
-        writeln!(st.stdout(), "OK").unwrap();
+        writeln!(st.stdout(), "kernel_file_size={}", kernel_file_size).unwrap();
     }
     loop {}
 }
