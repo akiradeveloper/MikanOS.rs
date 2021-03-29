@@ -28,14 +28,14 @@ fn efi_main(_handle: Handle, st: SystemTable<Boot>) -> Status {
     let fs = unsafe { &mut *fs.get() };
     let mut root_dir = fs.open_volume().unwrap_success();
  
-    let fh = root_dir.open("kernel.efi", FileMode::Read, FileAttribute::READ_ONLY).unwrap_success();
+    let fh = root_dir.open("kernel.elf", FileMode::Read, FileAttribute::READ_ONLY).unwrap_success();
     let file_type = fh.into_type().unwrap_success();
     if let FileType::Regular(mut f) = file_type {
         const BUF_SIZE: usize = 4000;
         let mut buf = [0u8; BUF_SIZE];
         let info: &mut FileInfo = f.get_info(&mut buf).unwrap_success();
         let kernel_file_size: u64 = info.file_size();
-        panic!("OK");
+        writeln!(st.stdout(), "OK").unwrap();
     }
     loop {}
 }
