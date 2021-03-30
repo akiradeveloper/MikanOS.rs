@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+
 #![feature(abi_efiapi)]
 
 extern crate rlibc;
@@ -28,7 +29,6 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
     let mut fb = go.frame_buffer();
     let fb_addr = fb.as_mut_ptr() as u64;
     let fb_size = fb.size();
-
     writeln!(st.stdout(), "fb_addr={:x}, fb_size={}", fb_addr, fb_size).unwrap();
 
     let fs = boot_services
