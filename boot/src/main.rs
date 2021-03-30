@@ -10,6 +10,7 @@ use uefi::{
     prelude::*,
     proto::media::file::{File, FileAttribute, FileInfo, FileMode, FileType},
     proto::media::fs::SimpleFileSystem,
+    proto::console::gop::GraphicsOutput,
     table::boot::{AllocateType, MemoryType},
 };
 
@@ -20,6 +21,15 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
     writeln!(st.stdout(), "Hello, world!").unwrap();
 
     let boot_services = st.boot_services();
+
+    // Get Framebuffer
+    let go = boot_services.locate_protocol::<GraphicsOutput>().unwrap_success();
+    let go = unsafe { &mut *go.get() };
+    let mut fb = go.frame_buffer();
+    let fb_addr = fb.as_mut_ptr();
+    let fb_size = fb.size();
+    let fb = unsafe { core::slice::from_raw_parts_mut(fb_addr, fb_size) };
+
 
     let fs = boot_services
         .locate_protocol::<SimpleFileSystem>()
@@ -59,6 +69,10 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         writeln!(st.stdout(), "kernel_main address = {:x}", kernel_main_addr).unwrap();
 
         st.exit_boot_services(handle, &mut tmp_buf).unwrap_success();
+
+        for i in 0..20000 {
+            fb[i] = 255;
+        }
 
         let kernel_main = unsafe {
             let f: extern "C" fn() = core::mem::transmute(kernel_main_addr);
