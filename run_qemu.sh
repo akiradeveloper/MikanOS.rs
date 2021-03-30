@@ -10,4 +10,5 @@ sudo umount mnt
 # https://gihyo.jp/admin/serial/01/ubuntu-recipe/0441
 qemu-system-x86_64 \
     -drive if=pflash,format=raw,file=OVMF.fd \
-    -hda disk.img
+    -hda disk.img \
+    -monitor stdio

@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
 #![feature(abi_efiapi)]
-use uefi::prelude::*;
 
 extern crate rlibc;
 use core::fmt::Write;
@@ -37,7 +36,6 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         let mut tmp_buf = [0u8; TMP_BUF_SIZE];
         let info: &mut FileInfo = f.get_info(&mut tmp_buf).unwrap_success();
         let kernel_file_size: u64 = info.file_size();
-        writeln!(st.stdout(), "kernel_file_size={}", kernel_file_size).unwrap();
 
         const KERNEL_BASE_ADDR: usize = 0x100000;
         let n_pages = (kernel_file_size as usize + 0xfff) / 0x1000;
@@ -51,9 +49,17 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         let buf = unsafe { core::slice::from_raw_parts_mut(p as *mut u8, kernel_file_size as usize) };
         // Read kernel file into the memory
         f.read(buf).unwrap_success();
+        f.close();
         writeln!(st.stdout(), "kernel is read into the memory").unwrap();
 
         st.exit_boot_services(handle, &mut tmp_buf).unwrap_success();
+
+        let func_addr = 0x1000b0 as u64; // tmp
+        let func = unsafe {
+            let func: extern "C" fn() = core::mem::transmute(func_addr);
+            func
+        };
+        func();
     }
     loop {}
 }

@@ -14,5 +14,6 @@ rustflags = [
     # Linker Options
     "-C", "link-arg=--entry=kernel_main",
     "-C", "link-arg=--image-base=0x100000",
+    "-C", "link-arg=-nmagic",
     # "-C", "link-arg=-znorelro",
 ]
