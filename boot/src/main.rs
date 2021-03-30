@@ -4,6 +4,7 @@
 
 extern crate rlibc;
 use core::fmt::Write;
+use byteorder::{ByteOrder, LittleEndian};
 
 use uefi::{
     prelude::*,
@@ -11,7 +12,6 @@ use uefi::{
     proto::media::fs::SimpleFileSystem,
     table::boot::{AllocateType, MemoryType},
 };
-
 
 #[entry]
 fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
@@ -46,20 +46,25 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
                 n_pages,
             )
             .unwrap_success();
-        let buf = unsafe { core::slice::from_raw_parts_mut(p as *mut u8, kernel_file_size as usize) };
+
         // Read kernel file into the memory
+        let buf = unsafe { core::slice::from_raw_parts_mut(p as *mut u8, kernel_file_size as usize) };
         f.read(buf).unwrap_success();
         f.close();
         writeln!(st.stdout(), "kernel is read into the memory").unwrap();
 
+        // Entry address should be found at +24
+        let buf = unsafe { core::slice::from_raw_parts((p + 24) as *mut u8, 8)};
+        let kernel_main_addr = LittleEndian::read_u64(&buf);
+        writeln!(st.stdout(), "kernel_main address = {:x}", kernel_main_addr).unwrap();
+
         st.exit_boot_services(handle, &mut tmp_buf).unwrap_success();
 
-        let func_addr = 0x1000b0 as u64; // tmp
-        let func = unsafe {
-            let func: extern "C" fn() = core::mem::transmute(func_addr);
-            func
+        let kernel_main = unsafe {
+            let f: extern "C" fn() = core::mem::transmute(kernel_main_addr);
+            f
         };
-        func();
+        kernel_main();
     }
     loop {}
 }

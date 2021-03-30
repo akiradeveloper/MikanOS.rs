@@ -10,3 +10,4 @@ edition = "2018"
 uefi = "0.8"
 uefi-services = "0.5"
 rlibc = "1"
+byteorder = { version = "1", default-features = false }
