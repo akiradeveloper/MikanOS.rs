@@ -12,7 +12,7 @@ cargo build
     )
 end
 
-task :mk_disk => [:boot, :kernel] do
+task :image => [:boot, :kernel] do
     %x(
 qemu-img create -f raw disk.img 200M
 mkfs.fat -n 'Mikan OS' -s 2 -f 2 -R 32 -F 32 disk.img
@@ -25,7 +25,7 @@ sudo umount mnt
     )
 end
 
-task :run_qemu do
+task :qemu => [:image] do
     %x(
 qemu-system-x86_64 \
 -drive if=pflash,format=raw,file=OVMF.fd \
