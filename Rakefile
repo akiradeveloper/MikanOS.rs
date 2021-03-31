@@ -19,8 +19,8 @@ mkfs.fat -n 'Mikan OS' -s 2 -f 2 -R 32 -F 32 disk.img
 mkdir -p mnt
 sudo mount -o loop disk.img mnt
 sudo mkdir -p mnt/EFI/BOOT
-sudo cp target/x86_64-unknown-uefi/debug/boot.efi mnt/EFI/BOOT/BOOTX64.EFI
-sudo cp target/x86_64-unknown-linux-gnu/debug/kernel mnt/kernel.elf
+sudo cp boot/target/x86_64-unknown-uefi/debug/boot.efi mnt/EFI/BOOT/BOOTX64.EFI
+sudo cp kernel/target/x86_64-unknown-linux-gnu/debug/kernel mnt/kernel.elf
 sudo umount mnt
     )
 end
