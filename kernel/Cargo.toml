@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 panic-halt = "0.2"
+mikan = { path = "../mikan" }
