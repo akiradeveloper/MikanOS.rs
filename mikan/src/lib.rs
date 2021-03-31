@@ -1,1 +1,5 @@
-#![feature(restricted_std)]
+#![no_std]
+
+pub struct FrameBuffer {
+
+}

@@ -3,6 +3,8 @@
 
 #![feature(abi_efiapi)]
 
+use mikan::FrameBuffer;
+
 extern crate rlibc;
 use core::fmt::Write;
 use byteorder::{ByteOrder, LittleEndian};

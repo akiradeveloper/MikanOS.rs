@@ -6,6 +6,8 @@
 
 extern crate panic_halt;
 
+use mikan::FrameBuffer;
+
 #[no_mangle]
 extern "efiapi" fn kernel_main(fb_addr: u64, fb_size: u64) -> ! {
     // tmp
