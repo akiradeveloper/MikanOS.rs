@@ -46,6 +46,7 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         pixels_per_scan_line,
         pixel_format,
     };
+    writeln!(st.stdout(), "{:?}", &fb_config);
 
     let fs = boot_services
         .locate_protocol::<SimpleFileSystem>()

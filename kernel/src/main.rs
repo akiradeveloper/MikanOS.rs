@@ -16,7 +16,7 @@ struct PixelColor {
 }
 
 fn write_pixel(fb_config: &FrameBufferConfig, x: u32, y: u32, color: PixelColor) {
-    let pixel_pos = fb_config.pixels_per_scan_line * x + y;
+    let pixel_pos = fb_config.pixels_per_scan_line * y + x;
     let (c0,c1,c2) = match fb_config.pixel_format {
         PixelFormat::RGBResv8BitPerColor => {
             (color.g, color.b, color.r)
@@ -26,7 +26,7 @@ fn write_pixel(fb_config: &FrameBufferConfig, x: u32, y: u32, color: PixelColor)
         },
     };
     let fb_addr = fb_config.frame_buffer;
-    let fb_size = fb_config.pixels_per_scan_line * fb_config.vertical_resolution;
+    let fb_size = 4 * fb_config.pixels_per_scan_line * fb_config.vertical_resolution;
     let fb = unsafe { core::slice::from_raw_parts_mut(fb_addr, fb_size as usize) };
     let base = 4 * pixel_pos as usize;
     fb[base+0] = c0;
