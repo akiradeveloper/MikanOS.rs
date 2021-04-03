@@ -6,7 +6,7 @@
 
 extern crate panic_halt;
 
-use mikan::FrameBuffer;
+use mikan::{FrameBufferConfig, PixelFormat};
 
 #[no_mangle]
 extern "efiapi" fn kernel_main(fb_addr: *mut u8, fb_size: u64) -> ! {

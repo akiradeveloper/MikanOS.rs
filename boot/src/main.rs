@@ -3,7 +3,7 @@
 
 #![feature(abi_efiapi)]
 
-use mikan::FrameBuffer;
+use mikan::{FrameBufferConfig};
 
 extern crate rlibc;
 use core::fmt::Write;
@@ -13,7 +13,7 @@ use uefi::{
     prelude::*,
     proto::media::file::{File, FileAttribute, FileInfo, FileMode, FileType},
     proto::media::fs::SimpleFileSystem,
-    proto::console::gop::GraphicsOutput,
+    proto::console::gop::{GraphicsOutput, PixelFormat},
     table::boot::{AllocateType, MemoryType},
 };
 
@@ -31,6 +31,21 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
     let mut fb = go.frame_buffer();
     let fb_addr = fb.as_mut_ptr();
     let fb_size = fb.size();
+    let info = go.current_mode_info();
+    let (hori, vert) = info.resolution();
+    let pixels_per_scan_line = info.stride() as u32;
+    let pixel_format = match info.pixel_format() {
+        PixelFormat::Rgb => mikan::PixelFormat::RGBResv8BitPerColor,
+        PixelFormat::Bgr => mikan::PixelFormat::BGRResv8BitPerColor,
+        _ => panic!(),
+    };
+    let fb_config = FrameBufferConfig {
+        frame_buffer: fb_addr,
+        horizontal_resolution: hori as u32,
+        vertical_resolution: vert as u32,
+        pixels_per_scan_line,
+        pixel_format,
+    };
 
     let fs = boot_services
         .locate_protocol::<SimpleFileSystem>()
