@@ -44,6 +44,7 @@ fn main() {
 
     let out = OpenOptions::new().write(true).truncate(true).create(true).open("src/generated.rs").unwrap();
     let mut out = BufWriter::new(out);
+    out.write(b"#![no_std]\n");
     out.write(b"pub static font_tbl: [[u8; 16]; 256] = [");
     for i in 0..256 {
         let xs = &xss[i];
