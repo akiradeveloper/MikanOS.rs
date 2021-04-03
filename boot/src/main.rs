@@ -87,10 +87,10 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         st.exit_boot_services(handle, &mut tmp_buf).unwrap_success();
 
         let kernel_main = unsafe {
-            let f: extern "efiapi" fn(*mut u8, u64) -> ! = core::mem::transmute(kernel_main_addr);
+            let f: extern "efiapi" fn(&FrameBufferConfig) -> ! = core::mem::transmute(kernel_main_addr);
             f
         };
-        kernel_main(fb_addr, fb_size as u64);
+        kernel_main(&fb_config);
     }
     loop {}
 }
