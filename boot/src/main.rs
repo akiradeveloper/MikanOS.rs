@@ -64,6 +64,19 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         let info: &mut FileInfo = f.get_info(&mut tmp_buf).unwrap_success();
         let kernel_file_size: u64 = info.file_size();
 
+        // Read kernel file into temporary space
+        let tmp_p = boot_services.allocate_pool(MemoryType::LOADER_DATA, kernel_file_size as usize).unwrap_success();
+        let mut tmp_buf = unsafe { core::slice::from_raw_parts_mut(tmp_p as *mut u8, kernel_file_size as usize) };
+        f.read(&mut tmp_buf).unwrap_success();
+        use elf_rs::*;
+        let elf = Elf::from_bytes(&tmp_buf).unwrap();
+        if let Elf::Elf64(e) = elf {
+            writeln!(st.stdout(), "{:?} header: {:?}", e, e.header()).unwrap();
+            for p in e.program_header_iter() {
+                writeln!(st.stdout(), "{:x?}", p).unwrap();
+            }
+        }
+
         const KERNEL_BASE_ADDR: usize = 0x100000;
         let n_pages = (kernel_file_size as usize + 0xfff) / 0x1000;
         let p = boot_services
