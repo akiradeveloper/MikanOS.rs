@@ -70,12 +70,22 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         f.read(&mut tmp_buf).unwrap_success();
         use elf_rs::*;
         let elf = Elf::from_bytes(&tmp_buf).unwrap();
+        let mut kernel_start = u64::max_value();
+        let mut kernel_end = u64::min_value();
         if let Elf::Elf64(e) = elf {
             writeln!(st.stdout(), "{:?} header: {:?}", e, e.header()).unwrap();
             for p in e.program_header_iter() {
                 writeln!(st.stdout(), "{:x?}", p).unwrap();
+                let header = p.ph;
+                if matches!(header.ph_type(), ProgramType::LOAD) {
+                    let s = header.vaddr();
+                    let e = s + header.memsz();
+                    kernel_start = core::cmp::min(kernel_start, s);
+                    kernel_end = core::cmp::max(kernel_end, e);
+                } 
             }
         }
+        writeln!(st.stdout(), "start: {:x}, end: {:x}", kernel_start, kernel_end).unwrap();
 
         const KERNEL_BASE_ADDR: usize = 0x100000;
         let n_pages = (kernel_file_size as usize + 0xfff) / 0x1000;
