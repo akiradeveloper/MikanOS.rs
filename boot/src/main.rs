@@ -29,9 +29,8 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
     let go = boot_services.locate_protocol::<GraphicsOutput>().unwrap_success();
     let go = unsafe { &mut *go.get() };
     let mut fb = go.frame_buffer();
-    let fb_addr = fb.as_mut_ptr() as u64;
+    let fb_addr = fb.as_mut_ptr();
     let fb_size = fb.size();
-    writeln!(st.stdout(), "fb_addr={:x}, fb_size={}", fb_addr, fb_size).unwrap();
 
     let fs = boot_services
         .locate_protocol::<SimpleFileSystem>()
@@ -73,7 +72,7 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         st.exit_boot_services(handle, &mut tmp_buf).unwrap_success();
 
         let kernel_main = unsafe {
-            let f: extern "efiapi" fn(u64, u64) -> ! = core::mem::transmute(kernel_main_addr);
+            let f: extern "efiapi" fn(*mut u8, u64) -> ! = core::mem::transmute(kernel_main_addr);
             f
         };
         kernel_main(fb_addr, fb_size as u64);
