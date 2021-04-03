@@ -75,7 +75,7 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         let mut kernel_start = u64::max_value();
         let mut kernel_end = u64::min_value();
         if let Elf::Elf64(ref e) = elf {
-            writeln!(st.stdout(), "{:?} header: {:?}", e, e.header()).unwrap();
+            // writeln!(st.stdout(), "{:?} header: {:?}", e, e.header()).unwrap();
             for p in e.program_header_iter() {
                 writeln!(st.stdout(), "{:x?}", p).unwrap();
                 let header = p.ph;
@@ -87,28 +87,27 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
                 } 
             }
         }
-        writeln!(st.stdout(), "start: {:x}, end: {:x}", kernel_start, kernel_end).unwrap();
+        // writeln!(st.stdout(), "start: {:x}, end: {:x}", kernel_start, kernel_end).unwrap();
 
         let load_len = kernel_end - kernel_start;
         let n_pages = (load_len as usize + 0xfff) / 0x1000;
         let kernel_p = boot_services
             .allocate_pages(
-                // NOTE: The starting address should be aligned
+                // NOTE: The starting address should be aligned.
+                // But is the kernel_start guaranteed to be aligned?
                 AllocateType::Address(kernel_start as usize),
                 MemoryType::LOADER_DATA,
                 n_pages,
             )
             .unwrap_success();
-        // writeln!(st.stdout(), "allocated kernel region");
 
         let mut kernel_buf = unsafe { core::slice::from_raw_parts_mut(kernel_p as *mut u8, load_len as usize) };
 
         // Zeros the kernel region
         // unsafe { core::ptr::write_bytes(&mut kernel_buf, 0, load_len as usize) };
-        for i in 0..load_len {
-            kernel_buf[i as usize] = 0;
+        for i in 0..load_len as usize {
+            kernel_buf[i] = 0;
         }
-        writeln!(st.stdout(), "zeroed");
 
         // Read kernel file into the memory
         if let Elf::Elf64(ref e) = elf {
@@ -116,18 +115,16 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
                 let header = p.ph;
                 if matches!(header.ph_type(), ProgramType::LOAD) {
                     let src = p.segment();
-                    let addr = header.vaddr();
-                    let len = header.filesz();
-                    let mut dst = unsafe { core::slice::from_raw_parts_mut(addr as *mut u8, len as usize) };
-                    for i in 0..len as usize{
+                    let dst_addr = header.vaddr();
+                    let src_len = header.filesz();
+                    assert_eq!(src.len(), src_len as usize);
+                    let mut dst = unsafe { core::slice::from_raw_parts_mut(dst_addr as *mut u8, src_len as usize) };
+                    for i in 0..src_len as usize{
                         dst[i] = src[i];
                     }
                 }
             }
         }
-
-
-        writeln!(st.stdout(), "kernel is read into the memory").unwrap();
 
         // Entry address should be found at +24
         let buf = unsafe { core::slice::from_raw_parts((kernel_tmp_p as u64 + 24) as *mut u8, 8)};
