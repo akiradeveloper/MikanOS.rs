@@ -36,16 +36,16 @@ fn write_pixel(fb_config: &FrameBufferConfig, x: u32, y: u32, color: PixelColor)
 
 #[no_mangle]
 extern "efiapi" fn kernel_main(fb_config: &FrameBufferConfig) -> ! {
-    // for x in 0..fb_config.horizontal_resolution {
-    //     for y in 0..fb_config.vertical_resolution {
-    //         write_pixel(&fb_config, x, y, PixelColor { g: 255, b: 255, r: 255 });
-    //     }
-    // }
-    // for x in 0..200 {
-    //     for y in 0..100 {
-    //         write_pixel(&fb_config, 100+x, 100+y, PixelColor { g: 0, b: 255, r: 0 });
-    //     }
-    // }
+    for x in 0..fb_config.horizontal_resolution {
+        for y in 0..fb_config.vertical_resolution {
+            write_pixel(&fb_config, x, y, PixelColor { g: 255, b: 255, r: 255 });
+        }
+    }
+    for x in 0..200 {
+        for y in 0..100 {
+            write_pixel(&fb_config, 100+x, 100+y, PixelColor { g: 0, b: 255, r: 0 });
+        }
+    }
     loop {
         unsafe {
             asm!("hlt")
