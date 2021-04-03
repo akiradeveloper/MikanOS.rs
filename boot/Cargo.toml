@@ -11,4 +11,5 @@ uefi = "0.8"
 uefi-services = "0.5"
 rlibc = "1"
 byteorder = { version = "1", default-features = false }
+elf_rs = "0.1"
 mikan = { path = "../mikan" }
