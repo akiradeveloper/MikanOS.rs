@@ -68,39 +68,57 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         let tmp_p = boot_services.allocate_pool(MemoryType::LOADER_DATA, kernel_file_size as usize).unwrap_success();
         let mut tmp_buf = unsafe { core::slice::from_raw_parts_mut(tmp_p as *mut u8, kernel_file_size as usize) };
         f.read(&mut tmp_buf).unwrap_success();
+        f.close();
+
         use elf_rs::*;
         let elf = Elf::from_bytes(&tmp_buf).unwrap();
         let mut kernel_start = u64::max_value();
         let mut kernel_end = u64::min_value();
-        if let Elf::Elf64(e) = elf {
+        if let Elf::Elf64(ref e) = elf {
             writeln!(st.stdout(), "{:?} header: {:?}", e, e.header()).unwrap();
             for p in e.program_header_iter() {
                 writeln!(st.stdout(), "{:x?}", p).unwrap();
                 let header = p.ph;
                 if matches!(header.ph_type(), ProgramType::LOAD) {
                     let s = header.vaddr();
-                    let e = s + header.memsz();
+                    let len = header.memsz();
                     kernel_start = core::cmp::min(kernel_start, s);
-                    kernel_end = core::cmp::max(kernel_end, e);
+                    kernel_end = core::cmp::max(kernel_end, s + len);
                 } 
             }
         }
         writeln!(st.stdout(), "start: {:x}, end: {:x}", kernel_start, kernel_end).unwrap();
 
-        const KERNEL_BASE_ADDR: usize = 0x100000;
-        let n_pages = (kernel_file_size as usize + 0xfff) / 0x1000;
+        let load_len = kernel_end - kernel_start;
+        let n_pages = (load_len as usize + 0xfff) / 0x1000;
         let p = boot_services
             .allocate_pages(
-                AllocateType::Address(KERNEL_BASE_ADDR),
+                AllocateType::Address(kernel_start as usize),
                 MemoryType::LOADER_DATA,
                 n_pages,
             )
             .unwrap_success();
 
+        let mut buf = unsafe { core::slice::from_raw_parts_mut(p as *mut u8, load_len as usize) };
+
+        // Zeros the kernel region
+        unsafe { core::ptr::write_bytes(&mut buf, 0, load_len as usize) };
+
         // Read kernel file into the memory
-        let buf = unsafe { core::slice::from_raw_parts_mut(p as *mut u8, kernel_file_size as usize) };
-        f.read(buf).unwrap_success();
-        f.close();
+        if let Elf::Elf64(ref e) = elf {
+            for p in e.program_header_iter() {
+                let header = p.ph;
+                if matches!(header.ph_type(), ProgramType::LOAD) {
+                    let src = p.segment();
+                    let dst = header.vaddr();
+                    let len = header.filesz();
+                    unsafe { core::ptr::copy(&src, dst as *mut &[u8], len as usize) };
+                }
+            }
+        }
+
+        boot_services.free_pool(tmp_p);
+
         writeln!(st.stdout(), "kernel is read into the memory").unwrap();
 
         // Entry address should be found at +24
