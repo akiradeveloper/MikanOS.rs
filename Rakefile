@@ -5,7 +5,14 @@ cargo build -Zbuild-std
     )
 end
 
-task :kernel do
+task :fonts do
+    %x(
+cd fonts
+cargo build
+    )
+end
+
+task :kernel => [:fonts] do
     %x(
 cd kernel
 cargo build

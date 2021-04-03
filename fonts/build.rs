@@ -5,7 +5,7 @@ use std::io::Write;
 use regex::*;
 
 fn main() {
-    println!("cargo:rerun-if-changed=hankaku.txt");
+    // println!("cargo:rerun-if-changed=hankaku.txt");
     let f = File::open("hankaku.txt").unwrap();
     let mut f = BufReader::new(f);
 
@@ -42,9 +42,8 @@ fn main() {
     // dbg!(&xss);
     assert_eq!(xss.len(), 256);
 
-    let out = OpenOptions::new().write(true).truncate(true).create(true).open("src/generated.rs").unwrap();
+    let out = OpenOptions::new().write(true).truncate(true).create(true).open("../kernel/src/fonts.rs").unwrap();
     let mut out = BufWriter::new(out);
-    out.write(b"#![no_std]\n");
     out.write(b"pub static font_tbl: [[u8; 16]; 256] = [");
     for i in 0..256 {
         let xs = &xss[i];

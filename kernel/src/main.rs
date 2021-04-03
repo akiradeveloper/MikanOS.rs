@@ -5,8 +5,10 @@
 #![feature(abi_efiapi)]
 
 extern crate panic_halt;
+mod fonts;
 
 use mikan::{FrameBufferConfig, PixelFormat};
+use fonts::font_tbl;
 
 #[derive(Clone, Copy)]
 struct PixelColor {
