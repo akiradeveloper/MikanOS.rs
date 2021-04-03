@@ -104,7 +104,6 @@ fn efi_main(handle: Handle, st: SystemTable<Boot>) -> Status {
         let mut kernel_buf = unsafe { core::slice::from_raw_parts_mut(kernel_p as *mut u8, load_len as usize) };
 
         // Zeros the kernel region
-        // unsafe { core::ptr::write_bytes(&mut kernel_buf, 0, load_len as usize) };
         for i in 0..load_len as usize {
             kernel_buf[i] = 0;
         }
