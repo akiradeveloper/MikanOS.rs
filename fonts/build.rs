@@ -42,7 +42,8 @@ fn main() {
     // dbg!(&xss);
     assert_eq!(xss.len(), 256);
 
-    let out = OpenOptions::new().write(true).truncate(true).create(true).open("../kernel/src/fonts.rs").unwrap();
+    std::fs::create_dir("auto_generated").ok();
+    let out = OpenOptions::new().write(true).truncate(true).create(true).open("auto_generated/fonts.rs").unwrap();
     let mut out = BufWriter::new(out);
     out.write(b"pub static font_tbl: [[u8; 16]; 256] = [");
     for i in 0..256 {

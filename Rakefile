@@ -9,6 +9,8 @@ task :fonts do
     %x(
 cd fonts
 cargo build
+cd -
+cp fonts/auto_generated/fonts.rs kernel/src/fonts.rs
     )
 end
 
