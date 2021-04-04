@@ -10,6 +10,10 @@ mod fonts;
 use mikan::{FrameBufferConfig, PixelFormat};
 use fonts::font_tbl;
 
+trait PixelWriter {
+    fn write(&self, x: u32, y: u32, color: PixelColor);
+}
+
 #[derive(Clone, Copy)]
 struct PixelColor {
     g: u8,
@@ -17,8 +21,19 @@ struct PixelColor {
     r: u8,
 }
 
-fn write_pixel(fb_config: &FrameBufferConfig, x: u32, y: u32, color: PixelColor) {
+fn write_pixel_triple(fb_config: &FrameBufferConfig, x: u32, y: u32, abc: (u8,u8,u8)) {
     let pixel_pos = fb_config.pixels_per_scan_line * y + x;
+    let (c0,c1,c2) = abc;
+    let fb_addr = fb_config.frame_buffer;
+    let fb_size = 4 * fb_config.pixels_per_scan_line * fb_config.vertical_resolution;
+    let fb = unsafe { core::slice::from_raw_parts_mut(fb_addr, fb_size as usize) };
+    let base = 4 * pixel_pos as usize;
+    fb[base+0] = c0;
+    fb[base+1] = c1;
+    fb[base+2] = c2;
+}
+
+fn write_pixel(fb_config: &FrameBufferConfig, x: u32, y: u32, color: PixelColor) {
     let (c0,c1,c2) = match fb_config.pixel_format {
         PixelFormat::RGBResv8BitPerColor => {
             (color.g, color.b, color.r)
@@ -27,13 +42,7 @@ fn write_pixel(fb_config: &FrameBufferConfig, x: u32, y: u32, color: PixelColor)
             (color.b, color.g, color.r)
         },
     };
-    let fb_addr = fb_config.frame_buffer;
-    let fb_size = 4 * fb_config.pixels_per_scan_line * fb_config.vertical_resolution;
-    let fb = unsafe { core::slice::from_raw_parts_mut(fb_addr, fb_size as usize) };
-    let base = 4 * pixel_pos as usize;
-    fb[base+0] = c0;
-    fb[base+1] = c1;
-    fb[base+2] = c2;
+    write_pixel_triple(&fb_config, x, y, (c0, c1, c2));
 }
 
 #[no_mangle]
