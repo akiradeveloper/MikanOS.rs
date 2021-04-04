@@ -9,7 +9,7 @@ mod fonts;
 mod graphics;
 
 use mikan::{FrameBufferConfig, PixelFormat};
-use graphics::{write_pixel, PixelColor};
+use graphics::{write_pixel, write_string, PixelColor};
 
 struct Context {
     fb_config: Option<FrameBufferConfig>,
@@ -37,6 +37,7 @@ extern "efiapi" fn kernel_main(fb_config: FrameBufferConfig) -> ! {
             write_pixel( 100+x, 100+y, PixelColor { r: 0, g: 0, b: 255 });
         }
     }
+    write_string("akiradeveloper", 300, 300, PixelColor { r: 255, g: 0, b: 0 });
     loop {
         unsafe {
             asm!("hlt")

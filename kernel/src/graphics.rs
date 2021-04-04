@@ -43,3 +43,11 @@ pub fn write_ascii(c: char, x: u32, y: u32, color: PixelColor) {
         }
     }
 }
+
+pub fn write_string(s: &str, x: u32, y: u32, color: PixelColor) {
+    let n = s.len();
+    for (i, c) in s.char_indices() {
+        let off = 8 * i;
+        write_ascii(c, x + off as u32, y, color);
+    }
+}
