@@ -10,6 +10,18 @@ mod fonts;
 use mikan::{FrameBufferConfig, PixelFormat};
 use fonts::font_tbl;
 
+struct Context {
+    fb_config: Option<FrameBufferConfig>,
+}
+impl Context {
+    fn fb_config(&self) -> &FrameBufferConfig {
+        self.fb_config.as_ref().unwrap()
+    }
+}
+static mut G_CONTEXT: Context = Context {
+    fb_config: None,
+};
+
 #[derive(Clone, Copy)]
 struct PixelColor {
     r: u8,
@@ -29,7 +41,8 @@ fn write_pixel_triple(fb_config: &FrameBufferConfig, x: u32, y: u32, abc: (u8,u8
     fb[base+2] = c2;
 }
 
-fn write_pixel(fb_config: &FrameBufferConfig, x: u32, y: u32, color: PixelColor) {
+fn write_pixel(x: u32, y: u32, color: PixelColor) {
+    let fb_config = unsafe { G_CONTEXT.fb_config() };
     let (c0,c1,c2) = match fb_config.pixel_format {
         PixelFormat::RGBResv8BitPerColor => {
             (color.g, color.b, color.r)
@@ -43,14 +56,16 @@ fn write_pixel(fb_config: &FrameBufferConfig, x: u32, y: u32, color: PixelColor)
 
 #[no_mangle]
 extern "efiapi" fn kernel_main(fb_config: FrameBufferConfig) -> ! {
+    unsafe { G_CONTEXT.fb_config = Some(fb_config); }
+
     for x in 0..fb_config.horizontal_resolution {
         for y in 0..fb_config.vertical_resolution {
-            write_pixel(&fb_config, x, y, PixelColor { r: 255, g: 255, b: 255 });
+            write_pixel( x, y, PixelColor { r: 255, g: 255, b: 255 });
         }
     }
     for x in 0..200 {
         for y in 0..100 {
-            write_pixel(&fb_config, 100+x, 100+y, PixelColor { r: 0, g: 0, b: 255 });
+            write_pixel( 100+x, 100+y, PixelColor { r: 0, g: 0, b: 255 });
         }
     }
     loop {
