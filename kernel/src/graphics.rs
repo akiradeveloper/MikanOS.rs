@@ -30,3 +30,16 @@ pub fn write_pixel(x: u32, y: u32, color: PixelColor) {
     };
     write_pixel_triple(&fb_config, x, y, (c0, c1, c2));
 }
+
+pub fn write_ascii(c: char, x: u32, y: u32, color: PixelColor) {
+    use crate::fonts::ascii_map;
+    let ascii_map = ascii_map(c);
+    for dy in 0..16u32 {
+        let scan = ascii_map[dy as usize];
+        for dx in 0..8 {
+            if (scan << dx) & 0x80 > 0 {
+                write_pixel(x+dx, y+dy, color);
+            }
+        }
+    }
+}
