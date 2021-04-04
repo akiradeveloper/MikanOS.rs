@@ -8,7 +8,6 @@ extern crate panic_halt;
 mod fonts;
 
 use mikan::{FrameBufferConfig, PixelFormat};
-use fonts::font_tbl;
 
 struct Context {
     fb_config: Option<FrameBufferConfig>,

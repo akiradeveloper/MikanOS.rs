@@ -10,7 +10,7 @@ task :fonts do
 cd fonts
 cargo build
 cd -
-cp fonts/auto_generated/fonts.rs kernel/src/fonts.rs
+cp fonts/auto_generated/fonts.rs kernel/src/fonts/font_tbl.rs
     )
 end
 
