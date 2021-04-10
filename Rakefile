@@ -5,16 +5,14 @@ cargo build -Zbuild-std=core
     )
 end
 
-task :fonts do
+task :font_tbl do
     %x(
-cd fonts
+cd font_tbl
 cargo build
-cd -
-cp fonts/auto_generated/fonts.rs kernel/src/fonts/font_tbl.rs
     )
 end
 
-task :kernel => [:fonts] do
+task :kernel => [:font_tbl] do
     %x(
 cd kernel
 cargo build

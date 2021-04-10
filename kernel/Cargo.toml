@@ -12,4 +12,5 @@ panic-halt = "0.2"
 bit_field = "0.10"
 x86_64 = "0.13"
 byteorder = { version = "1", default-features = false }
+font_tbl = { path = "../font_tbl" }
 mikan = { path = "../mikan" }
