@@ -48,6 +48,7 @@ impl Console {
                 for j in 0..N_COLUMN {
                     let c = self.buf[i][j];
                     graphics::write_ascii(c, 8 * j as u32, 16 * (i-1) as u32, self.fg_color);
+                    self.buf[i-1][j] = c;
                 }
             }
             self.cur_column = 0;
