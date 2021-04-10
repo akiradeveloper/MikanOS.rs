@@ -40,7 +40,7 @@ extern "efiapi" fn kernel_main(fb_config: FrameBufferConfig) -> ! {
         unsafe { writeln!(G_CONTEXT.console, "printk: {}", i).unwrap() };
     }
 
-    let bus_scan = pci::ScanPciDevices::new();
+    let mut bus_scan = pci::ScanPciDevices::new();
     bus_scan.scan_devices();
     for i in 0..bus_scan.num_devices {
         let dev = bus_scan.result[i];

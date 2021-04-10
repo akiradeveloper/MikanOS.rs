@@ -1,5 +1,7 @@
 use bit_field::BitField;
 
+pub type Result<T> = core::result::Result<T, ()>;
+
 pub struct ConfigAddress {
     pub reg: u8, // 0-255
     pub bus: u8, // 0-255
@@ -90,7 +92,7 @@ impl ScanPciDevices {
             result: [PciDevice::default(); 32],
         }
     }
-    pub fn scan_devices(&mut self) -> anyhow::Result<()> {
+    pub fn scan_devices(&mut self) -> Result<()> {
         let config = PciConfig::read(0, 0, 0);
         if !config.header_type.get_bit(7) {
             return self.scan_bus(0);
@@ -104,7 +106,7 @@ impl ScanPciDevices {
         }
         Ok(())
     }
-    fn scan_bus(&mut self, bus: u8) -> anyhow::Result<()> {
+    fn scan_bus(&mut self, bus: u8) -> Result<()> {
         for device in 0..32 {
             let config = PciConfig::read(bus, device, 0);
             if config.vender_id == 0xffff {
@@ -114,7 +116,7 @@ impl ScanPciDevices {
         }
         Ok(())
     }
-    fn scan_device(&mut self, bus: u8, device: u8) -> anyhow::Result<()> {
+    fn scan_device(&mut self, bus: u8, device: u8) -> Result<()> {
         self.scan_function(bus, device, 0)?;
         let config = PciConfig::read(bus, device, 0);
         if !config.header_type.get_bit(7) {
@@ -129,7 +131,7 @@ impl ScanPciDevices {
         }
         Ok(())
     }
-    fn scan_function(&mut self, bus: u8, device: u8, function: u8) -> anyhow::Result<()> {
+    fn scan_function(&mut self, bus: u8, device: u8, function: u8) -> Result<()> {
         let config = PciConfig::read(bus, device, function);
         let device = PciDevice { bus, device, function, config };
         self.result[self.num_devices] = device;
