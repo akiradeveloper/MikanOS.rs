@@ -1,5 +1,6 @@
 use crate::graphics::PixelColor;
 use crate::graphics;
+use core::fmt;
 
 const N_COLUMN: usize = 80;
 const N_ROW: usize = 25;
@@ -58,5 +59,12 @@ impl Console {
                 graphics::write_pixel(8 * j as u32, 16 * i as u32, self.bg_color);
             }
         }
+    }
+}
+
+impl fmt::Write for Console {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.put_string(s);
+        Ok(())
     }
 }

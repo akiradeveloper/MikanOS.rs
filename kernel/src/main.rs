@@ -4,11 +4,14 @@
 #![feature(asm)]
 #![feature(abi_efiapi)]
 
+
+extern crate rlibc;
 extern crate panic_halt;
 mod fonts;
 mod console;
 mod graphics;
 
+use core::fmt::Write;
 use mikan::{FrameBufferConfig, PixelFormat};
 use graphics::{write_pixel, write_string, PixelColor};
 use console::Console;
@@ -31,6 +34,10 @@ static mut G_CONTEXT: Context = Context {
 extern "efiapi" fn kernel_main(fb_config: FrameBufferConfig) -> ! {
     unsafe { G_CONTEXT.fb_config = Some(fb_config); }
     unsafe { G_CONTEXT.console.clear(); }
+
+    for i in 0..30 {
+        unsafe { writeln!(G_CONTEXT.console, "printk: {}", i).unwrap() };
+    }
 
     // for x in 0..fb_config.horizontal_resolution {
     //     for y in 0..fb_config.vertical_resolution {

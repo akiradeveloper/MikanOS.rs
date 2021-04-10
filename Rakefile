@@ -1,7 +1,7 @@
 task :boot do
     %x(
 cd boot
-cargo build -Zbuild-std
+cargo build -Zbuild-std=core
     )
 end
 
