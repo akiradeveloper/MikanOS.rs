@@ -47,14 +47,26 @@ struct PciConfig {
 }
 impl PciConfig {
     pub fn new(bus: u8, device: u8, function: u8) -> Self {
-        let r = PciConfig::default();
+        let mut r = PciConfig::default();
         let row = read_data(ConfigAddress { bus, device, function, reg: 0 });
+        r.vender_id = row.get_bits(0..16) as u16;
+        r.device_id = row.get_bits(16..32) as u16;
         let row = read_data(ConfigAddress { bus, device, function, reg: 4 });
+        r.command = row.get_bits(0..16) as u16;
+        r.status = row.get_bits(16..32) as u16;
         let row = read_data(ConfigAddress { bus, device, function, reg: 8 });
+        r.revision_id = row.get_bits(0..8) as u8;
+        r.interface = row.get_bits(8..16) as u8;
+        r.sub_class = row.get_bits(16..24) as u8;
+        r.base_class = row.get_bits(24..32) as u8;
         let row = read_data(ConfigAddress { bus, device, function, reg: 12 });
+        r.cacheline_size = row.get_bits(0..8) as u8;
+        r.latency_timer = row.get_bits(8..16) as u8;
+        r.header_type = row.get_bits(16..24) as u8;
+        r.bist = row.get_bits(24..32) as u8;
         for i in 0..6 {
             let row = read_data(ConfigAddress { bus, device, function, reg: 16 + 4*i });
-            // TODO
+            r.bar[i as usize] = row;
         }
         r
     }
