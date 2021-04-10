@@ -6,6 +6,7 @@
 
 extern crate panic_halt;
 mod fonts;
+mod console;
 mod graphics;
 
 use mikan::{FrameBufferConfig, PixelFormat};
@@ -37,7 +38,7 @@ extern "efiapi" fn kernel_main(fb_config: FrameBufferConfig) -> ! {
             write_pixel( 100+x, 100+y, PixelColor { r: 0, g: 0, b: 255 });
         }
     }
-    write_string("akiradeveloper", 300, 300, PixelColor { r: 255, g: 0, b: 0 });
+    write_string("akira developer", 300, 300, PixelColor { r: 255, g: 0, b: 0 });
     loop {
         unsafe {
             asm!("hlt")
