@@ -17,12 +17,45 @@ pub fn make_address(config: ConfigAddress) -> u32 {
     res
 }
 
-const CTRL: u32 = 0x0cf8;
-const DATA: u32 = 0x0cfc;
+const CTRL: u16 = 0x0cf8;
+const DATA: u16 = 0x0cfc;
 
-pub fn write_ctrl(v: u32) {
+use x86_64::instructions::port::Port;
 
+fn read_data(config: ConfigAddress) -> u32 {
+    let addr = make_address(config);
+    let mut port_w = Port::new(CTRL);
+    unsafe { port_w.write(addr) };
+    let mut port_r = Port::new(DATA);
+    unsafe { port_r.read() }
 }
-pub fn read_data() -> u32 {
-    unimplemented!()
+#[derive(Default)]
+struct PciConfig {
+    vender_id: u16,
+    device_id: u16,
+    command: u16,
+    status: u16,
+    revision_id: u8,
+    interface: u8,
+    sub_class: u8,
+    base_class: u8,
+    cacheline_size: u8,
+    latency_timer: u8,
+    header_type: u8,
+    bist: u8,
+    bar: [u32; 6],
+}
+impl PciConfig {
+    pub fn new(bus: u8, device: u8, function: u8) -> Self {
+        let r = PciConfig::default();
+        let row = read_data(ConfigAddress { bus, device, function, reg: 0 });
+        let row = read_data(ConfigAddress { bus, device, function, reg: 4 });
+        let row = read_data(ConfigAddress { bus, device, function, reg: 8 });
+        let row = read_data(ConfigAddress { bus, device, function, reg: 12 });
+        for i in 0..6 {
+            let row = read_data(ConfigAddress { bus, device, function, reg: 16 + 4*i });
+            // TODO
+        }
+        r
+    }
 }
