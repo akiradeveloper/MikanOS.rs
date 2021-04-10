@@ -29,7 +29,7 @@ fn read_data(config: ConfigAddress) -> u32 {
     let mut port_r = Port::new(DATA);
     unsafe { port_r.read() }
 }
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 struct PciConfig {
     vender_id: u16,
     device_id: u16,
@@ -46,7 +46,7 @@ struct PciConfig {
     bar: [u32; 6],
 }
 impl PciConfig {
-    pub fn new(bus: u8, device: u8, function: u8) -> Self {
+    pub fn read(bus: u8, device: u8, function: u8) -> Self {
         let mut r = PciConfig::default();
         let row = read_data(ConfigAddress { bus, device, function, reg: 0 });
         r.vender_id = row.get_bits(0..16) as u16;
@@ -69,5 +69,71 @@ impl PciConfig {
             r.bar[i as usize] = row;
         }
         r
+    }
+}
+#[derive(Default, Clone, Copy)]
+struct PciDevice {
+    bus: u8,
+    device: u8,
+    function: u8,
+    config: PciConfig,
+}
+
+struct ScanPciDevices {
+    num_devices: usize,
+    result: [PciDevice; 32],
+}
+impl ScanPciDevices {
+    pub fn new() -> Self {
+        Self {
+            num_devices: 0,
+            result: [PciDevice::default(); 32],
+        }
+    }
+    pub fn scan_devices(&mut self) -> anyhow::Result<()> {
+        let config = PciConfig::read(0, 0, 0);
+        if !config.header_type.get_bit(7) {
+            return self.scan_bus(0);
+        }
+        for function in 1..8 {
+            let config = PciConfig::read(0, 0, function);
+            if config.vender_id == 0xffff {
+                continue;
+            }
+            self.scan_bus(function)?;
+        }
+        Ok(())
+    }
+    fn scan_bus(&mut self, bus: u8) -> anyhow::Result<()> {
+        for device in 0..32 {
+            let config = PciConfig::read(bus, device, 0);
+            if config.vender_id == 0xffff {
+                continue;
+            }
+            self.scan_device(bus, device)?;
+        }
+        Ok(())
+    }
+    fn scan_device(&mut self, bus: u8, device: u8) -> anyhow::Result<()> {
+        self.scan_function(bus, device, 0)?;
+        let config = PciConfig::read(bus, device, 0);
+        if !config.header_type.get_bit(7) {
+            return Ok(())
+        }
+        for function in 1..8 {
+            let config = PciConfig::read(bus, device, function);
+            if config.vender_id == 0xffff {
+                continue;
+            }
+            self.scan_function(bus, device, function)?;
+        }
+        Ok(())
+    }
+    fn scan_function(&mut self, bus: u8, device: u8, function: u8) -> anyhow::Result<()> {
+        let config = PciConfig::read(bus, device, function);
+        let device = PciDevice { bus, device, function, config };
+        self.result[self.num_devices] = device;
+        self.num_devices += 1;
+        Ok(())
     }
 }
