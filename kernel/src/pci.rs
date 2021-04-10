@@ -134,6 +134,9 @@ impl ScanPciDevices {
     fn scan_function(&mut self, bus: u8, device: u8, function: u8) -> Result<()> {
         let config = PciConfig::read(bus, device, function);
         let device = PciDevice { bus, device, function, config };
+        if self.num_devices >= 32 {
+            return Err(())
+        }
         self.result[self.num_devices] = device;
         self.num_devices += 1;
 
