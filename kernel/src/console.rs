@@ -54,9 +54,9 @@ impl Console {
         }
     }
     pub fn clear(&mut self) {
-        for i in 0..N_ROW {
-            for j in 0..N_COLUMN {
-                graphics::write_pixel(8 * j as u32, 16 * i as u32, self.bg_color);
+        for i in 0..N_ROW * 16 {
+            for j in 0..N_COLUMN * 8 {
+                graphics::write_pixel(j as u32, i as u32, self.bg_color);
             }
         }
     }
