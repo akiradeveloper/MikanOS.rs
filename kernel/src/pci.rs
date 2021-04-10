@@ -33,7 +33,7 @@ fn read_data(config: ConfigAddress) -> u32 {
 }
 #[derive(Default, Clone, Copy)]
 pub struct PciConfig {
-    pub vender_id: u16,
+    pub vendor_id: u16,
     pub device_id: u16,
     pub command: u16,
     pub status: u16,
@@ -51,7 +51,7 @@ impl PciConfig {
     pub fn read(bus: u8, device: u8, function: u8) -> Self {
         let mut r = PciConfig::default();
         let row = read_data(ConfigAddress { bus, device, function, reg: 0 });
-        r.vender_id = row.get_bits(0..16) as u16;
+        r.vendor_id = row.get_bits(0..16) as u16;
         r.device_id = row.get_bits(16..32) as u16;
         let row = read_data(ConfigAddress { bus, device, function, reg: 4 });
         r.command = row.get_bits(0..16) as u16;
@@ -99,7 +99,7 @@ impl ScanPciDevices {
         }
         for function in 1..8 {
             let config = PciConfig::read(0, 0, function);
-            if config.vender_id == 0xffff {
+            if config.vendor_id == 0xffff {
                 continue;
             }
             self.scan_bus(function)?;
@@ -109,7 +109,7 @@ impl ScanPciDevices {
     fn scan_bus(&mut self, bus: u8) -> Result<()> {
         for device in 0..32 {
             let config = PciConfig::read(bus, device, 0);
-            if config.vender_id == 0xffff {
+            if config.vendor_id == 0xffff {
                 continue;
             }
             self.scan_device(bus, device)?;
@@ -124,7 +124,7 @@ impl ScanPciDevices {
         }
         for function in 1..8 {
             let config = PciConfig::read(bus, device, function);
-            if config.vender_id == 0xffff {
+            if config.vendor_id == 0xffff {
                 continue;
             }
             self.scan_function(bus, device, function)?;

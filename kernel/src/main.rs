@@ -41,12 +41,12 @@ extern "efiapi" fn kernel_main(fb_config: FrameBufferConfig) -> ! {
     }
 
     let mut bus_scan = pci::ScanPciDevices::new();
-    bus_scan.scan_devices();
+    bus_scan.scan_devices().unwrap();
     for i in 0..bus_scan.num_devices {
         let dev = bus_scan.result[i];
         let config = dev.config;
         unsafe { writeln!(G_CONTEXT.console, "{}.{}.{} vend:0x{:x} devid:0x{:x} base:0x{:x} sub:0x{:x} interface:0x{:x}",
-        dev.bus, dev.device, dev.function, config.vender_id, config.device_id, config.base_class, config.sub_class, config.interface).unwrap() };
+        dev.bus, dev.device, dev.function, config.vendor_id, config.device_id, config.base_class, config.sub_class, config.interface).unwrap() };
     }
 
     // for x in 0..fb_config.horizontal_resolution {
