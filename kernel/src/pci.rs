@@ -134,6 +134,16 @@ impl ScanPciDevices {
         let device = PciDevice { bus, device, function, config };
         self.result[self.num_devices] = device;
         self.num_devices += 1;
+
+        // PCI-PCI bridge
+        let base_class = config.base_class;
+        let sub_class = config.sub_class;
+        if base_class == 0x06 && sub_class == 0x04 {
+            let bus_numbers = config.bar[2];
+            let secondary_bus = (bus_numbers >> 8) & 0xff;
+            return self.scan_bus(secondary_bus as u8);
+        }
+
         Ok(())
     }
 }
