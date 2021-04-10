@@ -10,6 +10,7 @@ extern crate panic_halt;
 mod fonts;
 mod console;
 mod graphics;
+mod pci;
 
 use core::fmt::Write;
 use mikan::{FrameBufferConfig, PixelFormat};
