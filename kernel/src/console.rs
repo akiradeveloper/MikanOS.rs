@@ -4,7 +4,7 @@ use crate::graphics;
 const N_COLUMN: usize = 80;
 const N_ROW: usize = 25;
 
-struct Console {
+pub struct Console {
     fg_color: PixelColor,
     bg_color: PixelColor,
     cur_row: usize,
@@ -12,7 +12,7 @@ struct Console {
     buf: [[char; N_COLUMN]; N_ROW],
 }
 impl Console {
-    fn new(fg_color: PixelColor, bg_color: PixelColor) -> Self {
+    pub const fn new(fg_color: PixelColor, bg_color: PixelColor) -> Self {
         Self {
             fg_color,
             bg_color,
@@ -21,7 +21,7 @@ impl Console {
             buf: [[' '; N_COLUMN]; N_ROW],
         }
     }
-    fn put_string(&mut self, s: &str) {
+    pub fn put_string(&mut self, s: &str) {
         for (i, c) in s.char_indices() {
             match c {
                 '\n' => {
@@ -52,7 +52,7 @@ impl Console {
             self.cur_column = 0;
         }
     }
-    fn clear(&mut self) {
+    pub fn clear(&mut self) {
         for i in 0..N_ROW {
             for j in 0..N_COLUMN {
                 graphics::write_pixel(8 * j as u32, 16 * i as u32, self.bg_color);
