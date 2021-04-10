@@ -40,6 +40,14 @@ extern "efiapi" fn kernel_main(fb_config: FrameBufferConfig) -> ! {
         unsafe { writeln!(G_CONTEXT.console, "printk: {}", i).unwrap() };
     }
 
+    let bus_scan = pci::ScanPciDevices::new();
+    bus_scan.scan_devices();
+    for i in 0..bus_scan.num_devices {
+        let dev = bus_scan.result[i];
+        let config = dev.config;
+        unsafe { writeln!(G_CONTEXT.console, "{}.{}.{} vend:{}", dev.bus, dev.device, dev.function, config.vender_id).unwrap() };
+    }
+
     // for x in 0..fb_config.horizontal_resolution {
     //     for y in 0..fb_config.vertical_resolution {
     //         write_pixel( x, y, PixelColor { r: 255, g: 255, b: 255 });

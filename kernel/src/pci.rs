@@ -30,20 +30,20 @@ fn read_data(config: ConfigAddress) -> u32 {
     unsafe { port_r.read() }
 }
 #[derive(Default, Clone, Copy)]
-struct PciConfig {
-    vender_id: u16,
-    device_id: u16,
-    command: u16,
-    status: u16,
-    revision_id: u8,
-    interface: u8,
-    sub_class: u8,
-    base_class: u8,
-    cacheline_size: u8,
-    latency_timer: u8,
-    header_type: u8,
-    bist: u8,
-    bar: [u32; 6],
+pub struct PciConfig {
+    pub vender_id: u16,
+    pub device_id: u16,
+    pub command: u16,
+    pub status: u16,
+    pub revision_id: u8,
+    pub interface: u8,
+    pub sub_class: u8,
+    pub base_class: u8,
+    pub cacheline_size: u8,
+    pub latency_timer: u8,
+    pub header_type: u8,
+    pub bist: u8,
+    pub bar: [u32; 6],
 }
 impl PciConfig {
     pub fn read(bus: u8, device: u8, function: u8) -> Self {
@@ -72,16 +72,16 @@ impl PciConfig {
     }
 }
 #[derive(Default, Clone, Copy)]
-struct PciDevice {
-    bus: u8,
-    device: u8,
-    function: u8,
-    config: PciConfig,
+pub struct PciDevice {
+    pub bus: u8,
+    pub device: u8,
+    pub function: u8,
+    pub config: PciConfig,
 }
 
-struct ScanPciDevices {
-    num_devices: usize,
-    result: [PciDevice; 32],
+pub struct ScanPciDevices {
+    pub num_devices: usize,
+    pub result: [PciDevice; 32],
 }
 impl ScanPciDevices {
     pub fn new() -> Self {
