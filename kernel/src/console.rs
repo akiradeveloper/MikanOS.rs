@@ -69,3 +69,10 @@ impl fmt::Write for Console {
         Ok(())
     }
 }
+
+#[macro_export]
+macro_rules! printk {
+    ($($arg:tt)*) => (
+        unsafe { writeln!(G_CONTEXT.console, $($arg)*).unwrap(); }
+    );
+}

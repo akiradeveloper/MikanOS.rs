@@ -15,7 +15,7 @@ mod pci;
 use core::fmt::Write;
 use mikan::{FrameBufferConfig, PixelFormat};
 use graphics::{write_pixel, write_string, PixelColor};
-use console::Console;
+use console::{Console};
 
 struct Context {
     fb_config: Option<FrameBufferConfig>,
@@ -36,17 +36,13 @@ extern "efiapi" fn kernel_main(fb_config: FrameBufferConfig) -> ! {
     unsafe { G_CONTEXT.fb_config = Some(fb_config); }
     unsafe { G_CONTEXT.console.clear(); }
 
-    // for i in 0..30 {
-    //     unsafe { writeln!(G_CONTEXT.console, "printk: {}", i).unwrap() };
-    // }
-
     let mut bus_scan = pci::ScanPciDevices::new();
     bus_scan.scan_devices().unwrap();
     for i in 0..bus_scan.num_devices {
         let dev = bus_scan.result[i];
         let config = dev.config;
-        unsafe { writeln!(G_CONTEXT.console, "{}.{}.{} vend:0x{:x} devid:0x{:x} base:0x{:x} sub:0x{:x} interface:0x{:x}",
-        dev.bus, dev.device, dev.function, config.vendor_id, config.device_id, config.base_class, config.sub_class, config.interface).unwrap() };
+        printk!("{}.{}.{} vend:0x{:x} devid:0x{:x} base:0x{:x} sub:0x{:x} interface:0x{:x}",
+        dev.bus, dev.device, dev.function, config.vendor_id, config.device_id, config.base_class, config.sub_class, config.interface);
     }
 
     // for x in 0..fb_config.horizontal_resolution {
