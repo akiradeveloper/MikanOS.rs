@@ -8,7 +8,7 @@ pub struct ConfigAddress {
     pub device: u8, // 0-31
     pub function: u8, // 0-7
 }
-pub fn make_address(config: ConfigAddress) -> u32 {
+fn make_address(config: ConfigAddress) -> u32 {
     let mut res = 0;
     res.set_bits(0..=7, config.reg as u32);
     res.set_bits(8..=10, config.function as u32);
@@ -134,9 +134,8 @@ impl ScanPciDevices {
     fn scan_function(&mut self, bus: u8, device: u8, function: u8) -> Result<()> {
         let config = PciConfig::read(bus, device, function);
         let device = PciDevice { bus, device, function, config };
-        if self.num_devices >= 32 {
-            return Err(())
-        }
+        
+        assert!(self.num_devices < 32);
         self.result[self.num_devices] = device;
         self.num_devices += 1;
 
