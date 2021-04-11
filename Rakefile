@@ -36,7 +36,9 @@ task :qemu => [:image] do
     %x(
 qemu-system-x86_64 \
 -drive if=pflash,format=raw,file=OVMF.fd \
--usb \
+-device qemu-xhci \
+-device usb-mouse \
+-device usb-kbd \
 -hda disk.img \
 -monitor stdio
     )
