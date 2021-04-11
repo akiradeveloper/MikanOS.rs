@@ -11,6 +11,7 @@ mod fonts;
 mod console;
 mod graphics;
 mod pci;
+mod mouse;
 
 use core::fmt::Write;
 use mikan::{FrameBufferConfig, PixelFormat};
